@@ -38,15 +38,6 @@ while(1):
         break
     else:
         print 'Invalid credentials, try again...'
-
-while(loggedIn):
-	print 'Twitter Menu'
-	print '1) See Offline Messages'
-	print '2) Edit Subscriptions'
-	print '3) Post a Message'
-	print '4) Logout'
-	option = raw_input('Enter number corresponding to menu option: ')
-	
           
 # create dgram udp socket
 try:
@@ -57,6 +48,15 @@ except socket.error:
  
 host = 'localhost';
 port = 8888;
+ 
+while(loggedIn):
+	print 'Twitter Menu'
+	print '1) See Offline Messages'
+	print '2) Edit Subscriptions'
+	print '3) Post a Message'
+	print '4) Logout'
+	option = raw_input('Enter number corresponding to menu option: ')
+	 
  
 while(1) :
     msg = raw_input('Enter message to send : ')

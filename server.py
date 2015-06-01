@@ -3,6 +3,9 @@ import sys
  
 HOST = ''   # Symbolic name meaning all available interfaces
 PORT = 8888 # Arbitrary non-privileged port
+
+users = ['TweetGod', 'Anthony', 'Fernando']
+passWs = ['easypass', 'ITA', 'cs164'] 
  
 # Datagram (udp) socket
 try :
@@ -11,7 +14,6 @@ try :
 except socket.error, msg :
     print 'Failed to create socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
     sys.exit()
- 
  
 # Bind socket to local host and port
 try:
