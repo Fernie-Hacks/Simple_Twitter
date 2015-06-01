@@ -1,18 +1,12 @@
 import socket   #for sockets
 import sys  #for exit
+import getpass
 
-userList = []
-userList.append([])
-userList.append([])
-userList.append([])
-
-# Populate users, adding three users
-userList[0].append('TweetGod')
-userList[0].append('easypass')
-userList[1].append('Anthony')
-userList[1].append('ITA')
-userList[2].append('Fernando')
-userList[2].append('cs164')
+# A dictionary structure with usernames and passwords
+users = ['TweetGod', 'Anthony', 'Fernando']
+passWs = ['easypass', 'ITA', 'cs164']
+validation = False
+loggedIn = False
 
 #~ print 'M.......MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM8............,MMMMM.......MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
 #~ print '..~+++...MMMMMMMMMMMMMMMMMMMMMMMMMMMMM..++++..++++..:MMM...+++:..MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
@@ -29,13 +23,31 @@ userList[2].append('cs164')
 #~ print 'MMMN.............M,..................M8......~M$..........$M...........M...........:.......MMMMMMMMM'
 #~ print 'MMMMMMM8?+++++ZMMMMMMN7+ZMMMMMD+?DMMMMMMM7?MMMMMMMMO+++IMMMMMMMN7+++NMMMMMMN7+IDMMMMMM8+8MMMMMMMMMMM'
 
-print 'Please provide your log in credentials'
-username = raw_input('Username: ')
-password = raw_input('Password: ') 
+while(1):
+    print 'Please provide your log in credentials'
+    username = raw_input('Username: ')
+    passW = getpass.getpass('Password: ') 
+    count = 0;
+    for i in users:
+        if (str(i) == str(username)) and (str(passWs[count]) == str(passW)):
+            validation = True
+            break
+        count = count + 1
+    if validation is True:
+		loggedIn = True
+        break
+    else:
+        print 'Invalid credentials, try again...'
 
-for i in xrange(len(grid[i]))
-	if 
- 
+while(loggedIn):
+	print 'Twitter Menu'
+	print '1) See Offline Messages'
+	print '2) Edit Subscriptions'
+	print '3) Post a Message'
+	print '4) Logout'
+	option = raw_input('Enter number corresponding to menu option: ')
+	
+          
 # create dgram udp socket
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
