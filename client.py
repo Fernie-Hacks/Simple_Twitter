@@ -5,7 +5,7 @@ import select
 import string
         
 host = 'localhost';
-port = 7777;
+port = 8888;
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(2)
@@ -69,9 +69,12 @@ while(1):
                     print followers
                     break
                 elif int(subOption) == 2: 
-                    s.send('List')
+                    s.send('List ' + str(username))
                     users = s.recv(4096)
                     print users
+                    unfollow = raw_input('Enter user to unsubscribe: ')
+                    s.send('Remove ' + unfollow + ' ' + username)
+                    
                     break
                 else:
                     print 'Invalid option, try again'
