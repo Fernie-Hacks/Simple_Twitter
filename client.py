@@ -1,12 +1,21 @@
 import socket   #for sockets
 import sys  #for exit
 import getpass
+import select
+import string
 
-# A dictionary structure with usernames and passwords
-users = ['TweetGod', 'Anthony', 'Fernando']
-passWs = ['easypass', 'ITA', 'cs164']
-validation = False
-loggedIn = False
+host = 'localhost';
+port = 8888;
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.settimeout(2)
+ 
+# connect to remote host
+try :
+    s.connect((host, port))
+except :
+    print 'Unable to connect'
+    sys.exit()
 
 #~ print 'M.......MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM8............,MMMMM.......MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
 #~ print '..~+++...MMMMMMMMMMMMMMMMMMMMMMMMMMMMM..++++..++++..:MMM...+++:..MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM'
@@ -23,55 +32,50 @@ loggedIn = False
 #~ print 'MMMN.............M,..................M8......~M$..........$M...........M...........:.......MMMMMMMMM'
 #~ print 'MMMMMMM8?+++++ZMMMMMMN7+ZMMMMMD+?DMMMMMMM7?MMMMMMMMO+++IMMMMMMMN7+++NMMMMMMN7+IDMMMMMM8+8MMMMMMMMMMM'
 
-while(1):
+while(1): 
     print 'Please provide your log in credentials'
     username = raw_input('Username: ')
     passW = getpass.getpass('Password: ') 
-    count = 0;
-    for i in users:
-        if (str(i) == str(username)) and (str(passWs[count]) == str(passW)):
-            validation = True
-            break
-        count = count + 1
-    if validation is True:
+    msg = str(username + ' ' + passW)
+    s.send(msg)
+    reply = s.recv(4096)
+    if str(reply) == 'T':
 		loggedIn = True
-        break
-    else:
-        print 'Invalid credentials, try again...'
-          
-# create dgram udp socket
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-except socket.error:
-    print 'Failed to create socket'
-    sys.exit()
- 
-host = 'localhost';
-port = 8888;
- 
-while(loggedIn):
-	print 'Twitter Menu'
-	print '1) See Offline Messages'
-	print '2) Edit Subscriptions'
-	print '3) Post a Message'
-	print '4) Logout'
-	option = raw_input('Enter number corresponding to menu option: ')
-	 
- 
-while(1) :
-    msg = raw_input('Enter message to send : ')
-     
-    try :
-        #Set the whole string
-        s.sendto(msg, (host, port))
-         
-        # receive data from client (data, addr)
-        d = s.recvfrom(1024)
-        reply = d[0]
-        addr = d[1]
-         
-        print 'Server reply : ' + reply
-     
-    except socket.error, msg:
-        print 'Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-        sys.exit()
+	if loggedIn:
+		print 'Twitter Menu'
+		print '1) See Offline Messages'
+		print '2) Edit Subscriptions'
+		print '3) Post a Message'
+		print '4) Logout'
+		option = raw_input('Enter number corresponding to menu option: ') 
+		
+    
+#~ while 1:
+    #~ socket_list = [sys.stdin, s]
+     #~ 
+    #~ # Get the list sockets which are readable
+    #~ read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
+     #~ 
+    #~ for sock in read_sockets:
+        #~ #incoming message from remote server
+        #~ if sock == s:
+            #~ data = sock.recv(4096)
+            #~ if not data :
+                #~ print 'Connection closed'
+                #~ sys.exit()
+            #~ else :
+                #~ #print data
+                #~ sys.stdout.write(data)
+         #~ 
+        #~ #user entered a message
+        #~ else :
+            #~ #while(loggedIn):
+                #~ #print 'Twitter Menu'
+                #~ #print '1) See Offline Messages'
+                #~ #print '2) Edit Subscriptions'
+                #~ #print '3) Post a Message'
+                #~ #print '4) Logout'
+                #~ #option = raw_input('Enter number corresponding to menu option: ') 
+    #~ 
+            #~ msg = str(username + ' ' + passW)
+            #~ s.send(msg)
