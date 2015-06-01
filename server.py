@@ -13,8 +13,10 @@ class twitterUser:
         return (user in self.followers)
         
     def get_followers(self):
+        count = 1
         for i in self.followers:
-            followerList = str(i + '\n')
+            followerList = '\t'+str(i)
+            count = count +1
         return followerList
     
     def add_follower(self, user):
@@ -40,7 +42,7 @@ userList.append(Anthony)
 userList.append(Fernando)
  
 HOST = ''   # Symbolic name meaning all available interfaces
-PORT = 7777 # Arbitrary non-privileged port
+PORT = 8888 # Arbitrary non-privileged port
  
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -79,24 +81,45 @@ def clientthread(conn, myUsers, myPassWs):
             option = data.split()
             if str(option[0]) == str('Follow'):
                 if str(option[1]) == str(user):
-                    conn.sendall('Can not follow yourself')
+                    conn.sendall('Can not subscribe to yourself')
+                if (option[1] not in users):
+                    conn.sendall('Invalid username')
                 else:
                     userValue = users.index(str(option[2]))
                     exists = False
                     for i in users:
                         if (userList[userValue].is_follower(str(option[1]))):
                             conn.sendall('Already following that user.')
+                            exists = True
                             break
-                        if (str(i) == option[1]) and not(userList[userValue].is_follower(str(option[1]))):
+                        if (str(i) == str(option[1])) and not(userList[userValue].is_follower(str(option[1]))):
                             userList[userValue].add_follower(option[1])
                             conn.sendall ('You are now subscribe to ' + option[1])
                             exists = True
                             break
                     if exists == False:
-						conn.sendall('User does not exist.')
-             
-            if str(option[0]) == 'List':
-                print userList[userValue].get_followers()                
+                        conn.sendall('User does not exist.')
+            if str(option[0]) == str('List'):
+                userValue = users.index(str(option[1]))
+                if not (userList[userValue].followers):
+                    conn.sendall('\tYou do not have any subscription')
+                    break
+                conn.sendall(str(userList[userValue].get_followers()))
+            if str(option[0]) == str('Remove'):
+                if str(option[1]) == str(user):
+                    conn.sendall('Can not unsubscribe yourself')
+                else:
+                    userValue = users.index(str(option[2]))
+                    exists = False
+                    for i in users:
+                        if (userList[userValue].is_follower(str(option[1]))):
+                            userList[userValue].remove_follower(option[1])
+                            conn.sendall('Successfully unsubscribed to that user.')
+                            exists = True
+                            break
+                    if exists == False:
+                        conn.sendall('Invalid username.')
+                                
     #came out of loop
     conn.close()
  

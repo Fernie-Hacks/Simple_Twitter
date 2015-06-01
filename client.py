@@ -5,7 +5,7 @@ import select
 import string
         
 host = 'localhost';
-port = 7777;
+port = 8888;
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(2)
@@ -44,9 +44,9 @@ while(1):
         reply = s.recv(4096)
         if str(reply) == 'T':
             loggedIn = True
-            print 'Welcome ', username 
+            print '\tWelcome ', username 
         else:
-            print 'Invalid credentials, please try again...'
+            print '\tInvalid credentials, please try again...'
     
     if loggedIn:
         print 'Twitter Menu'
@@ -56,7 +56,7 @@ while(1):
         print '4) Logout'
         option = raw_input('Enter number corresponding to option: ')
         if int(option) == 1:
-            print 'Under construction'
+            print '\tUnder construction'
         elif int(option) == 2:
             while(1):    
                 print '1) Subscribe to users'   
@@ -66,21 +66,27 @@ while(1):
                     followUser = raw_input('Enter user to subscribe to: ')
                     s.send('Follow ' + str(followUser) + ' ' + str(username))
                     followers = s.recv(4096)
-                    print followers
+                    print '\t' + followers
                     break
                 elif int(subOption) == 2: 
-                    s.send('List')
+                    s.send('List ' + str(username))
                     users = s.recv(4096)
                     print users
+                    if str(users) == '\tYou do not have any subscription':
+						break
+                    unfollow = raw_input('Enter user to unsubscribe: ')
+                    s.send('Remove ' + unfollow + ' ' + username)
+                    unfollow = s.recv(4096)
+                    print '\t' + unfollow
                     break
                 else:
-                    print 'Invalid option, try again'
+                    print '\tInvalid option, try again'
         elif int(option) == 3:
-            print 'Under construction'
+            print '\tUnder construction'
         elif int(option) == 4:
             loggedIn = False
         else:
-            print 'Invalid option, try again...'
+            print '\tInvalid option, try again...'
              
         
     
