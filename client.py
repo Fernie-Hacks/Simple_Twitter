@@ -43,8 +43,11 @@ while(1):
         s.send(msg)
         reply = s.recv(4096)
         if str(reply) == 'T':
+            s.send('Trash')
             loggedIn = True
             print '\tWelcome ', username 
+            msgCount = s.recv(4096)
+            print '\tYou have ' + msgCount + ' new messages.'
         else:
             print '\tInvalid credentials, please try again...'
     
@@ -53,69 +56,91 @@ while(1):
         print '1) See Offline Messages'
         print '2) Edit Subscriptions'
         print '3) Post a Message'
-        print '4) Logout'
+        print '4) See Tweets'
+        print '5) Hashtag Search'
+        print '6) Logout'
         option = raw_input('Enter number corresponding to option: ')
-        if int(option) == 1:
-            print '\tUnder construction'
-        elif int(option) == 2:
+        if str(option) == '1':
+            while(1):
+                print '1) View all messages'
+                print '2) View messages from a particular user'
+                msgOption = raw_input('Select an option: ')
+                if str(msgOption) == '1':
+                    s.send('Msgs ' + str(username) + ' ' + str(username))
+                    allOfflineMsgs = s.recv(4096)
+                    print str(allOfflineMsgs)
+                    if str(allOfflineMsgs) == '\tYou do not have any offline messages':
+                        break;
+                elif str(msgOption) == '2':
+                    s.send('ListUsers ' + str(username))
+                    msgsList = s.recv(4096)
+                    print str(msgsList)
+                    if str(msgsList) == '\tYou do not have any offline messages':
+                        break;
+                    msgsFromUser = raw_input('Messages from what user? ')
+                    msgsByUser = msgsList.strip()
+                    if str(msgsByUser) in msgsList:
+                        s.send('Msgs ') + str(msgsFromUser) + username
+                        offlineMsgs = s.recv(4096)
+                        print str(offlineMsgs)
+                    else:
+                         'Invalid username'
+                else:
+                    print 'Invalid option, please try again.' 
+        elif str(option) == '2':
             while(1):    
                 print '1) Subscribe to users'   
                 print '2) Delete subscription'
+                print '3) Show Followers'
                 subOption = raw_input('Select an option: ')
-                if int(subOption) == 1:
+                if str(subOption) == '1':
                     followUser = raw_input('Enter user to subscribe to: ')
                     s.send('Follow ' + str(followUser) + ' ' + str(username))
                     followers = s.recv(4096)
                     print '\t' + followers
                     break
-                elif int(subOption) == 2: 
+                elif str(subOption) == '2': 
                     s.send('List ' + str(username))
                     users = s.recv(4096)
                     print users
                     if str(users) == '\tYou do not have any subscription':
-						break
+                        break
                     unfollow = raw_input('Enter user to unsubscribe: ')
                     s.send('Remove ' + unfollow + ' ' + username)
                     unfollow = s.recv(4096)
                     print '\t' + unfollow
                     break
+                elif str(subOption) == '3':
+                    print 'Under Construction'
                 else:
                     print '\tInvalid option, try again'
-        elif int(option) == 3:
-            print '\tUnder construction'
-        elif int(option) == 4:
+        elif str(option) == '3':
+            hasCorrectLength = False
+            while not(hasCorrectLength):
+                print 'Message + Hashtags should be no more than 140 characters'
+                tweet = []
+                tweet.append(raw_input ('Enter a Message or 1 to cancel: '))
+                if str(tweet[0]) == '1':
+                    break;
+                print 'Current Message Count: ', len(tweet[0])
+                tweet.append(raw_input ('Enter Hashtags: '))
+                if (len(tweet[0]) + len(tweet[1])) + 1 <= 140:
+                    hasCorrectLength = True;
+            if hasCorrectLength:
+                s.send('Tweet ' + username + ' ' + str(tweet[0]))
+                s.send(str(tweet[1]))
+            print '\tTweet has been posted.'
+        elif str(option) == '4':
+			s.send('SeeTweets ' + username)
+			tweets = s.recv(4096)
+			print tweets
+        elif str(option) == '5':
+			s.send('Hashtag' + username)
+			findings = s.recv(4096)
+        elif str(option) == '6':
             loggedIn = False
+            s.send('LogOut ' + username)
         else:
             print '\tInvalid option, try again...'
              
-        
-    
-#~ while 1:
-    #~ socket_list = [sys.stdin, s]
-     #~ 
-    #~ # Get the list sockets which are readable
-    #~ read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
-     #~ 
-    #~ for sock in read_sockets:
-        #~ #incoming message from remote server
-        #~ if sock == s:
-            #~ data = sock.recv(4096)
-            #~ if not data :
-                #~ print 'Connection closed'
-                #~ sys.exit()
-            #~ else :
-                #~ #print data
-                #~ sys.stdout.write(data)
-         #~ 
-        #~ #user entered a message
-        #~ else :
-            #~ #while(loggedIn):
-                #~ #print 'Twitter Menu'
-                #~ #print '1) See Offline Messages'
-                #~ #print '2) Edit Subscriptions'
-                #~ #print '3) Post a Message'
-                #~ #print '4) Logout'
-                #~ #option = raw_input('Enter number corresponding to menu option: ') 
-    #~ 
-            #~ msg = str(username + ' ' + passW)
-            #~ s.send(msg)
+print 'Outside while loop'     
