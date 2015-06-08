@@ -5,7 +5,7 @@ import select
 import string
         
 host = 'localhost';
-port = 7777;
+port = 8888;
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(2)
@@ -135,16 +135,30 @@ while(1):
                 s.send(str(tweet[1]))
             print '\tTweet has been posted.'
         elif str(option) == '4':
+            print 'Option 4'
             s.send('SeeTweets ' + username)
             tweets = s.recv(4096)
             print tweets
         elif str(option) == '5':
-            s.send('Hashtag' + username)
+            search = raw_input('Enter the Hashtag you want to search: ')
+            s.send('Hashtag ' + search + ' ' + username)
             findings = s.recv(4096)
+            print findings
         elif str(option) == '6':
             loggedIn = False
             s.send('LogOut ' + username)
             break
+        elif str(option) == 'messagecount' and str(username) == 'TweetGod':
+            s.send('MsgsCount ' + username)
+            count = s.recv(4096)
+            print '\tThe number of tweets so far are ', count
+        elif str(option) == 'usercount' and str(username) == 'TweetGod':
+            s.send('UserCount ' + username)
+            count = s.recv(4096)
+        elif str(option) == 'storedcount' and str(username) == 'TweetGod':
+            s.send('StoredCount ' + username)
+            count = s.recv(4096)
+            print '\tThe current number of unread messages are ', count
         else:
             print '\tInvalid option, try again...'
              

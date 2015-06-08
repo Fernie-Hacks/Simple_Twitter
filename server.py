@@ -9,6 +9,7 @@ class twitterUser:
             self.username = {}
         else:
             self.username = user
+        self.count = 0
         self.msgs = []
         self.tweets = []
         self.followers = []
@@ -26,17 +27,17 @@ class twitterUser:
         return followersList[:-1]
         
     def get_actual_followers(self, user):
-		count = 0
-		followers = ''
-		for i in userList:
-			for j in i.followers:
-				if str(j) == str(user):
-					followers += i.username + ' '
-					count = count +1
-		if count == 0:
-			return 'Nobody is subscribed you'
-		else:
-			return followers
+        count = 0
+        followers = ''
+        for i in userList:
+            for j in i.followers:
+                if str(j) == str(user):
+                    followers += i.username + ' '
+                    count = count +1
+        if count == 0:
+            return 'Nobody is subscribed you'
+        else:
+            return followers
   
     def get_msg_sender_name(self, user):
         if len(userList[users.index(str(user))].msgs) == 0:
@@ -66,8 +67,9 @@ class twitterUser:
         return combineMsgs[:-1]
     
     def get_tweets(self, user):
+        print len(userList[users.index(str(user))].tweets)
         if len(userList[users.index(str(user))].tweets) == 0:
-            return 'You do not have any tweets'
+            return '\tYou do not have any tweets'
         tweetMsgs = ''
         for i in userList[users.index(str(user))].tweets:
                 tweetMsgs +=  '\t' + str(i) + '\n'
@@ -83,7 +85,22 @@ class twitterUser:
         userList[users.index(str(user))].msgs.append(str(msg))
     
     def remove_msg(self, msg, user):
-        userList[users.index(str(user))].msgs.remove(str(msg)) 
+        userList[users.index(str(user))].msgs.remove(str(msg))
+    
+    def tweets_count(self):
+        return str(self.count)
+    
+    def hash_search(self, hashtag):
+        found = ''
+        for i in userList:
+            for j in i.tweets:  
+                if hashtag in j:
+                    found = '\t' + str(j) + '\t'
+        if str(found) == '':
+            found = '\tHashtag was not found.'  
+        return found
+                    
+        
 
 users = ['TweetGod', 'Anthony', 'Fernando']
 passWs = ['easypass', 'ITA', 'cs164']    
@@ -97,7 +114,7 @@ userList.append(Fernando)
 online = [False, False, False]
  
 HOST = ''   # Symbolic name meaning all available interfaces
-PORT = 7777 # Arbitrary non-privileged port
+PORT = 8888 # Arbitrary non-privileged port
  
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -166,8 +183,8 @@ def clientthread(conn, myUsers, myPassWs):
                     if exists == False:
                         conn.sendall('User does not exist.')
             elif str(option[0]) == str('Followers'):
-				userValue = users.index(str(option[1]))
-				conn.sendall(str(userList[userValue].get_actual_followers(option[1])))
+                userValue = users.index(str(option[1]))
+                conn.sendall(str(userList[userValue].get_actual_followers(option[1])))
             elif str(option[0]) == str('List'):
                 userValue = users.index(str(option[1]))
                 if not (userList[userValue].followers):
@@ -192,7 +209,7 @@ def clientthread(conn, myUsers, myPassWs):
                 option = data.split(' ', 2)
                 hashtags = conn.recv(1024)
                 userValue = users.index(str(option[1]))
-                #print userValue
+                userList[userValue].count = userList[userValue].count + 1 
                 if len(userList[userValue].followers) == 0:
                     break;
                 for i in userList[userValue].followers:
@@ -216,7 +233,22 @@ def clientthread(conn, myUsers, myPassWs):
                 userValue = user.index(option[1])
                 conn.sendall(userList[userValue].get_tweets(option[1]))
             elif str(option[0]) == str('Hashtag'):
+                userValue = user.index(option[2])
+                conn.sendall(userList[userValue].hash_search(option[1]))
+            elif str(option[0]) == str('MsgsCount'):
                 userValue = user.index(option[1])
+                conn.sendall(userList[userValue].tweets_count())
+            elif str(option[0]) == str('UserCount'):
+                count = 0
+                for i in online:
+					if i == True:
+						count = count + 1
+                conn.sendall(str(count))
+            elif str(option[0]) == str('StoredCount'):
+				count = 0
+				for i in userList:
+					count = count + len(i.msgs)
+				conn.sendall(str(count))
             elif str(option[0]) == str('LogOut'):
                 userValue = users.index(str(option[1]))
                 online[userValue] = False  
