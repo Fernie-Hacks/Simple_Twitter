@@ -5,66 +5,85 @@ from thread import *
 #User class
 class twitterUser:
     def __init__(self, user=None):
-        self.name = user
+        if user is None:
+            self.username = {}
+        else:
+            self.username = user
         self.msgs = []
         self.tweets = []
         self.followers = []
         self.hashtags = []
     
-    def is_follower(self, user):
-        return (user in self.followers)
+    def is_follower(self, name, user):
+        return (name in  userList[users.index(str(user))].followers)
         
-    def get_followers(self):
+    def get_followers(self, user):
         count = 1
         followersList = ''
-        for i in self.followers:
+        for i in userList[users.index(str(user))].followers:
             followersList += '\t' + str(i) + '\n'
             count = count +1
         return followersList[:-1]
+        
+    def get_actual_followers(self, user):
+		count = 0
+		followers = ''
+		for i in userList:
+			for j in i.followers:
+				if str(j) == str(user):
+					followers += i.username + ' '
+					count = count +1
+		if count == 0:
+			return 'Nobody is subscribed you'
+		else:
+			return followers
   
-    def get_msgs_users(self):
-        if len(self.msgs) == 0:
+    def get_msg_sender_name(self, user):
+        if len(userList[users.index(str(user))].msgs) == 0:
             return '\tYou do not have any offline messages' 
         myListUsers = ''
-        for i in self.msgs:
+        for i in userList[users.index(str(user))].msgs:
             msgSplit = i.strip(' ', 1)
             if str(msgSplit[0]) not in myListUsers:
                 myListUsers += '\t' + msgSplit[0] + '\n'
         return myListUsers[:-1]
             
-    def get_msgs(self, username):
-        if len(self.msgs) == 0:
+    def get_msgs(self, name, user):
+        if len(userList[users.index(str(user))].msgs) == 0:
             return '\tYou do not have any offline messages'
-        if str(username) == str(self.name):
+        if str(name) == str(user):
             isAllMsgs = True
         combineMsgs = ''
-        for i in self.msgs:
+        for i in userList[users.index(str(user))].msgs:
             if isAllMsgs:
                 combineMsgs +='\t'+ str(i) +'\n'
             else:
-                if str(fromUser) == str(username):
+                fromUser = i.strip(' ', 1)
+                if str(fromUser[:-1]) == str(name):
                     combineMsgs += '\t' + str(i) + '\n'
         isAllMsgs = False
-        self.msgs[:] = []
+        userList[users.index(str(user))].msgs[:] = []
         return combineMsgs[:-1]
     
-    def get_tweets(self):
-        tweets = ''
-        for i in self.tweets:
-                tweets +=  '\t' + str(i[:-1]) + '\n'
-        return tweets[:-1]
+    def get_tweets(self, user):
+        if len(userList[users.index(str(user))].tweets) == 0:
+            return 'You do not have any tweets'
+        tweetMsgs = ''
+        for i in userList[users.index(str(user))].tweets:
+                tweetMsgs +=  '\t' + str(i) + '\n'
+        return tweetMsgs[:-1]
     
-    def add_follower(self, user):
-        self.followers.append(str(user))
+    def add_follower(self, name, user):
+        userList[users.index(str(user))].followers.append(str(name))
     
-    def remove_follower(self, user):
-        self.followers.remove(str(user))
+    def remove_follower(self, name, user):
+        userList[users.index(str(user))].followers.remove(str(name))
     
-    def add_msg(self, msg):
-        self.msgs.append(str(msg))
+    def add_msg(self, msg, user):
+        userList[users.index(str(user))].msgs.append(str(msg))
     
-    def remove_msg(self, msg):
-        self.msgs.remove(str(msg)) 
+    def remove_msg(self, msg, user):
+        userList[users.index(str(user))].msgs.remove(str(msg)) 
 
 users = ['TweetGod', 'Anthony', 'Fernando']
 passWs = ['easypass', 'ITA', 'cs164']    
@@ -78,7 +97,7 @@ userList.append(Fernando)
 online = [False, False, False]
  
 HOST = ''   # Symbolic name meaning all available interfaces
-PORT = 8888 # Arbitrary non-privileged port
+PORT = 7777 # Arbitrary non-privileged port
  
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -99,8 +118,6 @@ def clientthread(conn, myUsers, myPassWs):
     global online
     #infinite loop so that function do not terminate and thread do not end.
     while True:
-        #if validation:
-         #   conn.sendall(str(len(userList[users.index(str(user))].msgs)))
         data = conn.recv(1024)
         if not data: 
             break
@@ -123,11 +140,11 @@ def clientthread(conn, myUsers, myPassWs):
             else:
                 conn.sendall('F')
         else:
-            option = data.split(' ', 2)
+            option = data.split()
             if str(option[0]) == str('Msgs'):
-                conn.sendall(userList[user.index(str(option[2]))].get_msgs(option[1]))
+                conn.sendall(userList[user.index(str(option[2]))].get_msgs(option[1], option[2]))
             elif str(option[0]) == str('ListUsers'):
-                conn.sendall(userList[user.index(str(option[1]))].get_msgs_users())
+                conn.sendall(userList[user.index(str(option[1]))].get_msg_sender_name(option[1]))
             elif str(option[0]) == str('Follow'):
                 if str(option[1]) == str(user):
                     conn.sendall('Can not subscribe to yourself')
@@ -137,23 +154,26 @@ def clientthread(conn, myUsers, myPassWs):
                     userValue = users.index(str(option[2]))
                     exists = False
                     for i in users:
-                        if (userList[userValue].is_follower(str(option[1]))):
-                            conn.sendall('Already following that user.')
+                        if (userList[userValue].is_follower(option[1], option[2])):
+                            conn.sendall('Already subscribed that user.')
                             exists = True
                             break
-                        if (str(i) == str(option[1])) and not(userList[userValue].is_follower(str(option[1]))):
-                            userList[userValue].add_follower(option[1])
-                            conn.sendall ('You are now subscribe to ' + option[1])
+                        if (str(i) == str(option[1])) and not(userList[userValue].is_follower(option[1], option[2])):
+                            userList[userValue].add_follower(option[1], option[2])
+                            conn.sendall ('You are now subscribed to ' + option[1])
                             exists = True
                             break
                     if exists == False:
                         conn.sendall('User does not exist.')
+            elif str(option[0]) == str('Followers'):
+				userValue = users.index(str(option[1]))
+				conn.sendall(str(userList[userValue].get_actual_followers(option[1])))
             elif str(option[0]) == str('List'):
                 userValue = users.index(str(option[1]))
                 if not (userList[userValue].followers):
-                    conn.sendall('\tYou do not have any subscription')
+                    conn.sendall('\tYou do not have any subscriptions')
                     break
-                conn.sendall(str(userList[userValue].get_followers()))
+                conn.sendall(str(userList[userValue].get_followers(option[1])))
             elif str(option[0]) == str('Remove'):
                 if str(option[1]) == str(user):
                     conn.sendall('Can not unsubscribe yourself')
@@ -161,14 +181,15 @@ def clientthread(conn, myUsers, myPassWs):
                     userValue = users.index(str(option[2]))
                     exists = False
                     for i in users:
-                        if (userList[userValue].is_follower(str(option[1]))):
-                            userList[userValue].remove_follower(option[1])
+                        if (userList[userValue].is_follower(option[1], option[2])):
+                            userList[userValue].remove_follower(option[1], option[2])
                             conn.sendall('Successfully unsubscribed to that user.')
                             exists = True
                             break
                     if exists == False:
                         conn.sendall('Invalid username.')
             elif str(option[0]) == str('Tweet'):
+                option = data.split(' ', 2)
                 hashtags = conn.recv(1024)
                 userValue = users.index(str(option[1]))
                 #print userValue
@@ -179,7 +200,7 @@ def clientthread(conn, myUsers, myPassWs):
                     tweet = str(option[1]) + ': ' + str(option[2]) + ' ' + hashtags
                     if online[followerIndex]:
                         userList[followerIndex].tweets.append(tweet)
-                        userList[userValue].msgs.append(tweet)
+                        userList[userValue].tweets.append(tweet)
                         singleHash = hashtags.split()
                         for d in singleHash:
                             userList[userValue].hashtags.append(str(d))
@@ -187,15 +208,15 @@ def clientthread(conn, myUsers, myPassWs):
                     else:
                         userList[followerIndex].msgs.append(tweet)
                         userList[followerIndex].tweets.append(tweet)
-                        userList[userValue].msgs.append(tweet)
+                        userList[userValue].tweets.append(tweet)
                         singleHash = hashtags.split()
                         for d in singleHash:
                             userList[userValue].hashtags.append(str(d))         
             elif str(option[0]) == str('SeeTweets'):
                 userValue = user.index(option[1])
-                conn.sendall(userList[userValue].get_tweets())
+                conn.sendall(userList[userValue].get_tweets(option[1]))
             elif str(option[0]) == str('Hashtag'):
-				userValue = user.index(option[1])
+                userValue = user.index(option[1])
             elif str(option[0]) == str('LogOut'):
                 userValue = users.index(str(option[1]))
                 online[userValue] = False  

@@ -5,7 +5,7 @@ import select
 import string
         
 host = 'localhost';
-port = 8888;
+port = 7777;
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(2)
@@ -69,8 +69,9 @@ while(1):
                     s.send('Msgs ' + str(username) + ' ' + str(username))
                     allOfflineMsgs = s.recv(4096)
                     print str(allOfflineMsgs)
-                    if str(allOfflineMsgs) == '\tYou do not have any offline messages':
-                        break;
+                    break
+                    #if str(allOfflineMsgs) == '\tYou do not have any offline messages':
+                    #    break;
                 elif str(msgOption) == '2':
                     s.send('ListUsers ' + str(username))
                     msgsList = s.recv(4096)
@@ -103,7 +104,7 @@ while(1):
                     s.send('List ' + str(username))
                     users = s.recv(4096)
                     print users
-                    if str(users) == '\tYou do not have any subscription':
+                    if str(users) == '\tYou do not have any subscriptions':
                         break
                     unfollow = raw_input('Enter user to unsubscribe: ')
                     s.send('Remove ' + unfollow + ' ' + username)
@@ -111,7 +112,10 @@ while(1):
                     print '\t' + unfollow
                     break
                 elif str(subOption) == '3':
-                    print 'Under Construction'
+                    s.send('Followers ' + str(username))
+                    followers = s.recv(4096)
+                    print '\t' + followers
+                    break
                 else:
                     print '\tInvalid option, try again'
         elif str(option) == '3':
@@ -131,16 +135,17 @@ while(1):
                 s.send(str(tweet[1]))
             print '\tTweet has been posted.'
         elif str(option) == '4':
-			s.send('SeeTweets ' + username)
-			tweets = s.recv(4096)
-			print tweets
+            s.send('SeeTweets ' + username)
+            tweets = s.recv(4096)
+            print tweets
         elif str(option) == '5':
-			s.send('Hashtag' + username)
-			findings = s.recv(4096)
+            s.send('Hashtag' + username)
+            findings = s.recv(4096)
         elif str(option) == '6':
             loggedIn = False
             s.send('LogOut ' + username)
+            break
         else:
             print '\tInvalid option, try again...'
              
-print 'Outside while loop'     
+print 'Session has ended'     
